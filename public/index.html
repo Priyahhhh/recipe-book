@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🍲 Recipe Book</title>
+  <style>
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+      background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?crop=entropy&cs=tinysrgb&fit=max&fm=jpg') no-repeat center center fixed;
+    }
+    
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .title {
+      text-align: center;
+      color: #e67e22;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .search-bar input {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px 0 0 5px;
+      outline: none;
+    }
+
+    .search-bar button {
+      padding: 10px 15px;
+      border: none;
+      background: #e67e22;
+      color: #fff;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+    }
+
+    .recipe-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .recipe-card {
+      background: #fafcfdbb;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .recipe-card h2 {
+      margin: 0 0 10px;
+      color: #0c0c91;
+    }
+
+    .recipe-card h4 {
+      margin-top: 15px;
+      margin-bottom: 5px;
+      color: #750870;
+    }
+
+    .recipe-card ul, .recipe-card ol {
+      padding-left: 20px;
+    }
+
+    .likes {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">🍲 Recipe Book</h1>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search recipes...">
+      <button onclick="searchRecipes()">Search</button>
+    </div>
+
+    <div id="recipeList" class="recipe-list"></div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:5000/api/recipes";
+
+    // Fetch all recipes initially
+    async function fetchRecipes() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        displayRecipes(data);
+      } catch (err) {
+        console.error("Error fetching recipes:", err);
+      }
+    }
+
+    // Search recipes by name
+    async function searchRecipes() {
+      const query = document.getElementById("searchInput").value.trim();
+      if (query === "") {
+        fetchRecipes();
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/search/${query}`);
+        const data = await res.json();
+        displayRecipes(data);
+      } catch (err) {
+        console.error("Error searching recipes:", err);
+      }
+    }
+
+    // Render recipes on the page
+    function displayRecipes(recipes) {
+      const container = document.getElementById("recipeList");
+      container.innerHTML = "";
+
+      if (recipes.length === 0) {
+        container.innerHTML = "<p>No recipes found.</p>";
+        return;
+      }
+
+      recipes.forEach(r => {
+        const card = document.createElement("div");
+        card.className = "recipe-card";
+        card.innerHTML = `
+          <h2>${r.title}</h2>
+          <h4>Ingredients</h4>
+          <ul>${r.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+          <h4>Steps</h4>
+          <ol>${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+          <p class="likes">❤️ Likes: ${r.likes}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Initial load
+    fetchRecipes();
+  </script>
+</body>
+</html>
